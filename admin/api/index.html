@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fetch Database API</title>
+  <script>
+    async function fetchData() {
+      let table = document.getElementById("fetchTable").value;
+      if (!table) {
+        alert("Please enter a table name");
+        return;
+      }
+
+      let url = `api.php?table=${table}`;
+
+      try {
+        let response = await fetch(url);
+        let text = await response.text();
+
+        let result = JSON.parse(text);
+        document.getElementById("response").innerText = JSON.stringify(result, null, 2);
+      } catch (error) {
+        console.error('Error:', error);
+        document.getElementById("response").innerText = "Invalid Table name";
+      }
+    }
+  </script>
+
+</head>
+
+<body>
+  <h2>Fetch Data from Database</h2>
+  <input type="text" id="fetchTable" placeholder="Enter table name">
+  <button onclick="fetchData()">Fetch Data</button>
+
+  <h3>API Response</h3>
+  <pre id="response"></pre>
+</body>
+
+</html>

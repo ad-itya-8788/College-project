@@ -1,0 +1,5 @@
+ Pehle sum = 0 lo, fir number % 10 se last digit nikalo, usko sum me add karo, phir number ko number // 10 se last digit hatao.
+Yeh process bar bar karna hoga, isliye while loop me daalo. Condition hogi jab tak number 0 nahi hota.
+
+
+/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/gm

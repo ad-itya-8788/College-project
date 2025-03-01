@@ -1,0 +1,527 @@
+-- Table: public.departments
+
+-- DROP TABLE IF EXISTS public.departments;
+
+CREATE TABLE IF NOT EXISTS public.departments
+(
+    department_code character varying(230) COLLATE pg_catalog."default" NOT NULL,
+    department_name character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    hod_name character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    description text COLLATE pg_catalog."default" NOT NULL,
+    location character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    contact character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT departments_pkey PRIMARY KEY (department_code),
+    CONSTRAINT departments_contact_key UNIQUE (contact),
+    CONSTRAINT departments_department_name_key UNIQUE (department_name),
+    CONSTRAINT departments_hod_name_key UNIQUE (hod_name),
+    CONSTRAINT departments_location CHECK (location IS NOT NULL)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.departments
+    OWNER to postgres;
+	
+	
+	
+-- Table: public.course
+
+-- DROP TABLE IF EXISTS public.course;
+
+CREATE TABLE IF NOT EXISTS public.course
+(
+    course_code character varying(230) COLLATE pg_catalog."default" NOT NULL,
+    course_name character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    description text COLLATE pg_catalog."default",
+    duration character varying(100) COLLATE pg_catalog."default",
+    dept_code character varying(233) COLLATE pg_catalog."default",
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT course_pkey PRIMARY KEY (course_code),
+    CONSTRAINT course_course_name_key UNIQUE (course_name),
+    CONSTRAINT course_dept_code_fkey FOREIGN KEY (dept_code)
+        REFERENCES public.departments (department_code) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE CASCADE
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.course
+    OWNER to postgres;
+	
+
+
+-- FUNCTION: public.insertcd()
+
+-- DROP FUNCTION IF EXISTS public.insertcd();
+
+CREATE OR REPLACE FUNCTION public.insertcd()
+    RETURNS trigger
+    LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE NOT LEAKPROOF
+AS $BODY$
+BEGIN
+    UPDATE student
+    SET 
+        course_code = (SELECT course_code FROM course WHERE course_name = NEW.course_name),
+        department_code = (SELECT dept_code FROM course WHERE course_name = NEW.course_name),
+        department_name = (SELECT department_name FROM departments WHERE department_code = (SELECT dept_code FROM course WHERE course_name = NEW.course_name))
+    WHERE enrollment = NEW.enrollment;
+
+    RETURN NEW;
+END;
+$BODY$;
+
+ALTER FUNCTION public.insertcd()
+    OWNER TO postgres;
+
+
+-- Table: public.admin
+
+-- DROP TABLE IF EXISTS public.admin;
+
+CREATE TABLE IF NOT EXISTS public.admin
+(
+    admin_id character varying(34) COLLATE pg_catalog."default" NOT NULL,
+    adm_name character varying(54) COLLATE pg_catalog."default",
+    password character varying(34) COLLATE pg_catalog."default",
+    contact_info character varying(34) COLLATE pg_catalog."default",
+    department_code character varying(34) COLLATE pg_catalog."default",
+    CONSTRAINT admin_pkey PRIMARY KEY (admin_id),
+    CONSTRAINT admin_adm_name_key UNIQUE (adm_name),
+    CONSTRAINT unique_contact_info UNIQUE (contact_info),
+    CONSTRAINT admin_department_code_fkey FOREIGN KEY (department_code)
+        REFERENCES public.departments (department_code) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.admin
+    OWNER to postgres;
+
+-- Trigger: insert_sy_user_after_admin_insert
+
+-- DROP TRIGGER IF EXISTS insert_sy_user_after_admin_insert ON public.admin;
+
+	
+	
+-- FUNCTION: public.delete_sy_user()
+
+-- DROP FUNCTION IF EXISTS public.delete_sy_user();
+
+CREATE OR REPLACE FUNCTION public.delete_sy_user()
+    RETURNS trigger
+    LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE NOT LEAKPROOF
+AS $BODY$
+BEGIN
+    DELETE FROM sy_user WHERE user_id = OLD.enrollment;
+    RETURN OLD;
+END;
+$BODY$;
+
+ALTER FUNCTION public.delete_sy_user()
+    OWNER TO postgres;
+
+
+-- FUNCTION: public.insertuser()
+
+-- DROP FUNCTION IF EXISTS public.insertuser();
+
+CREATE OR REPLACE FUNCTION public.insertuser()
+    RETURNS trigger
+    LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE NOT LEAKPROOF
+AS $BODY$
+begin
+
+insert into sy_user values(new.enrollment,new.sname,new.password,'Student');
+return new;
+end;
+$BODY$;
+
+ALTER FUNCTION public.insertuser()
+    OWNER TO postgres;
+
+-- Table: public.student
+
+-- DROP TABLE IF EXISTS public.student;
+
+CREATE TABLE IF NOT EXISTS public.student
+(
+    enrollment character varying(34) COLLATE pg_catalog."default" NOT NULL,
+    sname character varying(34) COLLATE pg_catalog."default",
+    gender character varying(10) COLLATE pg_catalog."default",
+    password character varying(255) COLLATE pg_catalog."default",
+    parent_name character varying(344) COLLATE pg_catalog."default",
+    email character varying(34) COLLATE pg_catalog."default",
+    phone bigint,
+    address character varying(255) COLLATE pg_catalog."default",
+    course_name character varying(255) COLLATE pg_catalog."default",
+    semester character varying(34) COLLATE pg_catalog."default",
+    dob date,
+    acdemic_year character varying(90) COLLATE pg_catalog."default",
+    course_code character varying(230) COLLATE pg_catalog."default",
+    department_code character varying(230) COLLATE pg_catalog."default",
+    department_name character varying(255) COLLATE pg_catalog."default",
+    feerecipt character varying(255) COLLATE pg_catalog."default",
+    studentphoto character varying(255) COLLATE pg_catalog."default",
+    "time" timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT student_pkey PRIMARY KEY (enrollment),
+    CONSTRAINT student_course_code_fkey FOREIGN KEY (course_code)
+        REFERENCES public.course (course_code) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT student_department_code_fkey FOREIGN KEY (department_code)
+        REFERENCES public.departments (department_code) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT student_department_name_fkey FOREIGN KEY (department_name)
+        REFERENCES public.departments (department_name) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT student_gender_check CHECK (gender::text = ANY (ARRAY['Male'::character varying::text, 'Female'::character varying::text]))
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.student
+    OWNER to postgres;
+
+-- Trigger: delete_sy_user_trigger
+
+-- DROP TRIGGER IF EXISTS delete_sy_user_trigger ON public.student;
+
+CREATE OR REPLACE TRIGGER delete_sy_user_trigger
+    AFTER DELETE
+    ON public.student
+    FOR EACH ROW
+    EXECUTE FUNCTION public.delete_sy_user();
+
+-- Trigger: insert_sy_user_after_student_insert
+
+-- DROP TRIGGER IF EXISTS insert_sy_user_after_student_insert ON public.student;
+
+
+-- Trigger: insertcd1
+
+-- DROP TRIGGER IF EXISTS insertcd1 ON public.student;
+
+CREATE OR REPLACE TRIGGER insertcd1
+    AFTER INSERT
+    ON public.student
+    FOR EACH ROW
+    EXECUTE FUNCTION public.insertcd();
+
+-- Trigger: sy_user
+
+-- DROP TRIGGER IF EXISTS sy_user ON public.student;
+
+CREATE OR REPLACE TRIGGER sy_user
+    AFTER INSERT
+    ON public.student
+    FOR EACH ROW
+    EXECUTE FUNCTION public.insertuser();
+	
+CREATE SEQUENCE teachers_teacher_id_seq START 1;
+-- Table: public.teachers
+
+-- DROP TABLE IF EXISTS public.teachers;
+
+CREATE TABLE IF NOT EXISTS public.teachers
+(
+    teacher_id character varying(255) COLLATE pg_catalog."default" NOT NULL DEFAULT nextval('teachers_teacher_id_seq'::regclass),
+    teacher_name character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    email character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    password character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    department character varying(255) COLLATE pg_catalog."default",
+    phone bigint,
+    address character varying(255) COLLATE pg_catalog."default",
+    "time" timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT teachers_pkey PRIMARY KEY (teacher_id),
+    CONSTRAINT teachers_email_key UNIQUE (email),
+    CONSTRAINT department FOREIGN KEY (department)
+        REFERENCES public.departments (department_code) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+)
+
+TABLESPACE pg_default;
+
+-- Table: public.sy_user
+
+-- DROP TABLE IF EXISTS public.sy_user;
+
+CREATE TABLE IF NOT EXISTS public.sy_user
+(
+    user_id character varying(34) COLLATE pg_catalog."default",
+    user_name character varying(34) COLLATE pg_catalog."default",
+    password character varying(255) COLLATE pg_catalog."default",
+    user_type character varying(15) COLLATE pg_catalog."default",
+    CONSTRAINT sy_user_user_id_key UNIQUE (user_id),
+    CONSTRAINT sy_user_user_type_check CHECK (user_type::text = ANY (ARRAY['Student'::character varying, 'Teacher'::character varying, 'Admin'::character varying]::text[]))
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.sy_user
+    OWNER to postgres;
+	
+	
+-- Table: public.classes
+
+-- DROP TABLE IF EXISTS public.classes;
+
+CREATE TABLE IF NOT EXISTS public.classes
+(
+    class_id character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    class_name character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    teacher_id character varying(255) COLLATE pg_catalog."default",
+    course_code character varying(230) COLLATE pg_catalog."default",
+    semester character varying(34) COLLATE pg_catalog."default",
+    "time" timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT classes_pkey PRIMARY KEY (class_id),
+    CONSTRAINT classes_course_code_fkey FOREIGN KEY (course_code)
+        REFERENCES public.course (course_code) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE SET NULL,
+    CONSTRAINT classes_teacher_id_fkey FOREIGN KEY (teacher_id)
+        REFERENCES public.teachers (teacher_id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE SET NULL
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.classes
+    OWNER to postgres;
+	
+-- Table: public.student_classes
+
+-- DROP TABLE IF EXISTS public.student_classes;
+
+CREATE TABLE IF NOT EXISTS public.student_classes
+(
+    student_enrollment character varying(34) COLLATE pg_catalog."default" NOT NULL,
+    class_id character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT student_classes_pkey PRIMARY KEY (student_enrollment, class_id),
+    CONSTRAINT student_classes_class_id_fkey FOREIGN KEY (class_id)
+        REFERENCES public.classes (class_id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE CASCADE,
+    CONSTRAINT student_classes_student_enrollment_fkey FOREIGN KEY (student_enrollment)
+        REFERENCES public.student (enrollment) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE CASCADE
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.student_classes
+    OWNER to postgres;
+	
+	
+-- FUNCTION: public.insertcdtemp()
+
+-- DROP FUNCTION IF EXISTS public.insertcdtemp();
+
+CREATE OR REPLACE FUNCTION public.insertcdtemp()
+    RETURNS trigger
+    LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE NOT LEAKPROOF
+AS $BODY$
+BEGIN
+    UPDATE tempstudent
+    SET 
+        course_code = (SELECT course_code FROM course WHERE course_name = NEW.course_name),
+        department_code = (SELECT dept_code FROM course WHERE course_name = NEW.course_name),
+        department_name = (SELECT department_name FROM departments WHERE department_code = (SELECT dept_code FROM course WHERE course_name = NEW.course_name))
+    WHERE enrollment = NEW.enrollment;
+
+    RETURN NEW;
+END;
+$BODY$;
+
+ALTER FUNCTION public.insertcdtemp()
+    OWNER TO postgres;
+	
+-- FUNCTION: public.insertcdtemp()
+
+-- DROP FUNCTION IF EXISTS public.insertcdtemp();
+
+CREATE OR REPLACE FUNCTION public.insertcdtemp()
+    RETURNS trigger
+    LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE NOT LEAKPROOF
+AS $BODY$
+BEGIN
+    UPDATE tempstudent
+    SET 
+        course_code = (SELECT course_code FROM course WHERE course_name = NEW.course_name),
+        department_code = (SELECT dept_code FROM course WHERE course_name = NEW.course_name),
+        department_name = (SELECT department_name FROM departments WHERE department_code = (SELECT dept_code FROM course WHERE course_name = NEW.course_name))
+    WHERE enrollment = NEW.enrollment;
+
+    RETURN NEW;
+END;
+$BODY$;
+
+ALTER FUNCTION public.insertcdtemp()
+    OWNER TO postgres;
+	
+-- Table: public.tempstudent
+
+-- DROP TABLE IF EXISTS public.tempstudent;
+
+CREATE TABLE IF NOT EXISTS public.tempstudent
+(
+    enrollment character varying(34) COLLATE pg_catalog."default" NOT NULL,
+    sname character varying(34) COLLATE pg_catalog."default",
+    gender character varying(10) COLLATE pg_catalog."default",
+    password character varying(255) COLLATE pg_catalog."default",
+    parent_name character varying(344) COLLATE pg_catalog."default",
+    email character varying(34) COLLATE pg_catalog."default",
+    phone bigint,
+    address character varying(255) COLLATE pg_catalog."default",
+    course_name character varying(255) COLLATE pg_catalog."default",
+    semester character varying(34) COLLATE pg_catalog."default",
+    dob date,
+    acdemic_year character varying(90) COLLATE pg_catalog."default",
+    course_code character varying(230) COLLATE pg_catalog."default",
+    department_code character varying(230) COLLATE pg_catalog."default",
+    department_name character varying(255) COLLATE pg_catalog."default",
+    feerecipt character varying(255) COLLATE pg_catalog."default",
+    studentphoto character varying(255) COLLATE pg_catalog."default",
+    "time" timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT temp_student_pkey PRIMARY KEY (enrollment),
+    CONSTRAINT student_course_code_fkey FOREIGN KEY (course_code)
+        REFERENCES public.course (course_code) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT student_department_code_fkey FOREIGN KEY (department_code)
+        REFERENCES public.departments (department_code) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT student_department_name_fkey FOREIGN KEY (department_name)
+        REFERENCES public.departments (department_name) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT student_gender_check CHECK (gender::text = ANY (ARRAY['Male'::character varying::text, 'Female'::character varying::text]))
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.tempstudent
+    OWNER to postgres;
+
+-- Trigger: tempinsertcd1
+
+-- DROP TRIGGER IF EXISTS tempinsertcd1 ON public.tempstudent;
+
+CREATE OR REPLACE TRIGGER tempinsertcd1
+    AFTER INSERT
+    ON public.tempstudent
+    FOR EACH ROW
+    EXECUTE FUNCTION public.insertcdtemp();
+
+
+    CREATE TABLE course_teacher (
+    course_code VARCHAR(230) NOT NULL,
+    teacher_id varchar(20) NOT NULL,
+    assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (course_code, teacher_id),
+    FOREIGN KEY (course_code) REFERENCES course(course_code) ON DELETE CASCADE,
+    FOREIGN KEY (teacher_id) REFERENCES teachers(teacher_id) ON DELETE CASCADE
+);
+
+
+
+ALTER TABLE course ADD COLUMN course_coordinator VARCHAR(255);
+
+-- Add the 'qualification' column to the 'teachers' table
+ALTER TABLE public.teachers
+ADD COLUMN qualification character varying(255) COLLATE pg_catalog."default";
+
+-- Adjust the table comment if necessary for documentation purposes
+COMMENT ON COLUMN public.teachers.qualification IS 'Qualification of the teacher';
+
+
+
+CREATE OR REPLACE FUNCTION public.insert_into_sy_user()
+RETURNS trigger
+LANGUAGE 'plpgsql'
+COST 100
+VOLATILE NOT LEAKPROOF
+AS $BODY$
+BEGIN
+    CASE TG_OP
+        WHEN 'INSERT' THEN
+            IF TG_TABLE_NAME = 'student' THEN
+                INSERT INTO sy_user (user_id, user_name, password, user_type)
+                VALUES (NEW.enrollment, NEW.sname, NEW.password, 'Student');
+            ELSIF TG_TABLE_NAME = 'teachers' THEN
+                INSERT INTO sy_user (user_id, user_name, password, user_type)
+                VALUES (NEW.teacher_id, NEW.teacher_name, NEW.password, 'Teacher');
+            ELSIF TG_TABLE_NAME = 'admin' THEN
+                INSERT INTO sy_user (user_id, user_name, password, user_type)
+                VALUES (NEW.admin_id, NEW.adm_name, NEW.password, 'Admin');
+            END IF;
+        WHEN 'UPDATE' THEN
+            IF TG_TABLE_NAME = 'student' THEN
+                UPDATE sy_user
+                SET user_name = NEW.sname, password = NEW.password
+                WHERE user_id = NEW.enrollment;
+            ELSIF TG_TABLE_NAME = 'teachers' THEN
+                UPDATE sy_user
+                SET user_name = NEW.teacher_name, password = NEW.password
+                WHERE user_id = NEW.teacher_id;
+            ELSIF TG_TABLE_NAME = 'admin' THEN
+                UPDATE sy_user
+                SET user_name = NEW.adm_name, password = NEW.password
+                WHERE user_id = NEW.admin_id;
+            END IF;
+        WHEN 'DELETE' THEN
+            IF TG_TABLE_NAME = 'student' THEN
+                DELETE FROM sy_user WHERE user_id = OLD.enrollment;
+            ELSIF TG_TABLE_NAME = 'teachers' THEN
+                DELETE FROM sy_user WHERE user_id = OLD.teacher_id;
+            ELSIF TG_TABLE_NAME = 'admin' THEN
+                DELETE FROM sy_user WHERE user_id = OLD.admin_id;
+            END IF;
+    END CASE;
+    -- Return new or old value based on operation type
+    IF TG_OP = 'DELETE' THEN
+        RETURN OLD;
+    ELSE
+        RETURN NEW;
+    END IF;
+END;
+$BODY$;
+
+-- Change owner if required
+ALTER FUNCTION public.insert_into_sy_user()
+    OWNER TO postgres;
+
+-- Triggers for INSERT, UPDATE, DELETE
+CREATE TRIGGER student_sy_user_trigger
+AFTER INSERT OR UPDATE OR DELETE ON student
+FOR EACH ROW
+EXECUTE FUNCTION public.insert_into_sy_user();
+
+CREATE TRIGGER teachers_sy_user_trigger
+AFTER INSERT OR UPDATE OR DELETE ON teachers
+FOR EACH ROW
+EXECUTE FUNCTION public.insert_into_sy_user();
+
+CREATE TRIGGER admin_sy_user_trigger
+AFTER INSERT OR UPDATE OR DELETE ON admin
+FOR EACH ROW
+EXECUTE FUNCTION public.insert_into_sy_user();

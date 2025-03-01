@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <link href="bootstrap.css" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f8f9fa;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      background-image: url("bludegrd.jpg");
+      background-size: 1300px 680px;
+      background-repeat: no-repeat;
+    }
+
+    .container-fluid {
+      flex: 1;
+      padding: 0;
+    }
+
+    /* Header Styles */
+    .header {
+      background-color: rgb(244, 244, 244);
+      border-bottom: 1px solid #ddd;
+      display: flex;
+      align-items: center;
+      padding: 10px 0;
+      width: 100%;
+    }
+
+    .header .logo {
+      margin: 0;
+      padding: 0;
+      flex: 1;
+    }
+
+    .header .logo img {
+      height: 60px;
+    }
+
+    .logout-btn {
+      background-color: #dc3545;
+      color: white;
+      padding: 5px 15px;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+
+    .logout-btn:hover {
+      background-color: #c82333;
+    }
+
+    /* Footer Styles */
+    footer {
+      background-color: #343a40;
+      color: white;
+      text-align: center;
+      padding: 10px 0;
+      position: relative;
+      bottom: 0;
+      width: 100%;
+    }
+
+    footer a {
+      color: #ffc107;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container-fluid">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">
+        <a href="https://moderncollegepune.edu.in/">
+          <img src="../photos/modernlogo.png" alt="Modern College Logo">
+        </a>
+      </div>
+      <div>
+        <a href="../logout.php" class="logout-btn">Logout</a>
+      </div>
+    </header>
+
+    <!-- Content goes here -->
+
+    <!-- Footer -->
+    <footer>
+      <p>For more information, visit <a href="https://adityachavan8788.netlify.app/" target="_blank">Aditya Chavan</a>
+      </p>
+    </footer>
+  </div>
+
+</body>
+
+</html>

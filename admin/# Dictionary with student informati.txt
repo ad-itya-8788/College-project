@@ -1,0 +1,31 @@
+# Dictionary with student information
+d = {1: "aditya", 2: "chavan", 3: "BCA"}
+
+# Store key-value pairs in tuples
+x = d.items()  
+print(d)  # Print the original dictionary
+print(x)  # Print key-value pairs as tuples
+
+# Print each key-value pair
+for t in x:
+    print(t)  
+
+# Print each key and value separately
+for t in x:
+    k = t[0]
+    v = t[1]  # Changed variable name to avoid confusion
+    print(k, v)
+
+# Unpack keys and values directly
+for k, v in x:
+    print(k, v)
+
+# Dictionary statistics
+print("Length of d:", len(d))        # Length of the dictionary
+print("Minimum key:", min(d))        # Minimum key
+print("Maximum key:", max(d))        # Maximum key
+print("Sum of keys:", sum(d))        # Sum of keys
+print("Sorted keys:", sorted(d))     # Sorted keys
+
+print(d1.pop(3)) ##return value and pop
+print(d1.popitem("BCA"))

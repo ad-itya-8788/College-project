@@ -1,0 +1,5 @@
+insert into departments
+values('DEPT1', 'DEPT', 'HOD', 'DEPTDEMO', 'LOCATION1', 'DET@GMAIL.COM');
+
+INSERT INTO ADMIN
+VALUES('admin', 'admin', 'admin', 'admin', 'DEPT1');

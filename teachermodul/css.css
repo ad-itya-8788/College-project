@@ -1,0 +1,84 @@
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+.header {
+  background: #f4f4f4;
+  border-bottom: 1px solid #ddd;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.header .logo img {
+  height: 60px;
+}
+.back-btn {
+  background: #007bff;
+  color: white;
+  padding: 8px 15px;
+  border-radius: 5px;
+  text-decoration: none;
+}
+.back-btn:hover {
+  background: #0056b3;
+}
+footer {
+  background: #343a40;
+  color: white;
+  text-align: center;
+  padding: 10px;
+}
+.table {
+  width: 100%;
+  margin: 20px 0;
+  border-collapse: collapse;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.table th,
+.table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+.table th {
+  background: #007bff;
+  color: white;
+}
+.table tr:hover {
+  background: #f1f1f1;
+}
+.btn-view {
+  background: #17a2b8;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+  text-decoration: none;
+}
+.btn-delete {
+  background: #dc3545;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+  text-decoration: none;
+}
+.upload-form {
+  margin: 20px 0;
+}
+.upload-form input[type="file"] {
+  margin-right: 10px;
+}
+.upload-form button {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.upload-form button:hover {
+  background: #218838;
+}

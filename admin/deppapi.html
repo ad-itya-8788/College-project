@@ -1,0 +1,83 @@
+<!DOCTYPE html >
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Departments</title>
+          <style>
+            table {
+              width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+            th, td {
+              padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+            th {
+              background - color: #f4f4f4;
+        }
+          </style>
+        </head>
+        <body>
+
+          <h2>Department Details</h2>
+          <table id="departmentsTable">
+            <thead>
+              <tr>
+                <th>Department Code</th>
+                <th>Department Name</th>
+                <th>HOD Name</th>
+                <th>Description</th>
+                <th>Location</th>
+                <th>Contact</th>
+                <th>Created At</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Data will be inserted here -->
+            </tbody>
+          </table>
+
+          <script>
+    // URL of the PHP API
+            const url = 'http://localhost/College%20Project/admin/report.php';
+
+            // Fetch data from the API
+            fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                const tableBody = document.querySelector("#departmentsTable tbody");
+                data.data.forEach(department => {
+                    const row = document.createElement("tr");
+
+            row.innerHTML = `
+            <td>${department.department_code}</td>
+            <td>${department.department_name}</td>
+            <td>${department.hod_name}</td>
+            <td>${department.description}</td>
+            <td>${department.location}</td>
+            <td>${department.contact}</td>
+            <td>${department.created_at}</td>
+            `;
+
+            tableBody.appendChild(row);
+                });
+            } else {
+              console.error('Error fetching data: ', data.message);
+            }
+        })
+        .catch(error => {
+              console.error('Error:', error);
+        });
+          </script>
+
+        </body>
+      </html>
